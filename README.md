@@ -7,29 +7,29 @@
 
 |— code
 
-|— src
+|   |— src
 > 
 
-|    |— `Dataset.py` : Custom dataset 정의, dataset resize, transform
+|   |   |— `Dataset.py` : Custom dataset 정의, dataset resize, transform
 > 
 
-|    |— `Evaluation.py` : 모델 성능 검증 코드
+|   |    |— `Evaluation.py` : 모델 성능 검증 코드
 > 
 
-|    |— `Models.py` : smp 라이브러리를 활용한 Unet 모델 class
+|   |    |— `Models.py` : smp 라이브러리를 활용한 Unet 모델 class
 > 
 
-> |    |— `Models_implementation.py` : 논문 기반으로 구현한 Unet 모델 class(w.batchnorm)
+|   |    |— `Models_implementation.py` : 논문 기반으로 구현한 Unet 모델 class(w.batchnorm)
 > 
 
-> |    |— `Train.py` : train loop, data loader, validation
+|   |    |— `Train.py` : train loop, data loader, validation
 > 
 
-> |    |— `Utils.py` : Annotation 형식 변환, loss & metric 계산 함수들
+|   |    |— `Utils.py` : Annotation 형식 변환, loss & metric 계산 함수들
 > 
 
-> |— `main.py`
+|   |— `main.py`
 > 
 
-> |— `damage_labeling.csv` : raw annotation 파일 → 추후 가공을 통해 `data/datainfo`의 json 파일들로 변경
+|   |— `damage_labeling.csv` : raw annotation 파일 → 추후 가공을 통해 `data/datainfo`의 json 파일들로 변경
 >
