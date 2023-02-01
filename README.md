@@ -7,16 +7,16 @@
 
 |— code
 
-> |— src
+|— src
 > 
 
-> |    |— `Dataset.py` : Custom dataset 정의, dataset resize, transform
+|    |— `Dataset.py` : Custom dataset 정의, dataset resize, transform
 > 
 
-> |    |— `Evaluation.py` : 모델 성능 검증 코드
+|    |— `Evaluation.py` : 모델 성능 검증 코드
 > 
 
-> |    |— `Models.py` : smp 라이브러리를 활용한 Unet 모델 class
+|    |— `Models.py` : smp 라이브러리를 활용한 Unet 모델 class
 > 
 
 > |    |— `Models_implementation.py` : 논문 기반으로 구현한 Unet 모델 class(w.batchnorm)
