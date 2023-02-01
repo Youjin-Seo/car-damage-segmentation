@@ -134,9 +134,10 @@ class Trainer():
                 # tuple -> np array -> tensor
                 # images = torch.tensor(images).float().to(self.device)  ## (B, 3, 256, 256), drop_last=false
                 images = torch.tensor(np.array(images)).float().to(self.device)
-                # masks = torch.tensor(masks).float().to(self.device)  ## (B, 256, 256) binary mask(0 or 1)
+                
                 # binary mask인 (B, 256, 256)에서 dimension을 추가한다. (model output과 loss 연산 위해)
                 masks = torch.tensor(np.expand_dims(np.array(masks), axis = 1)).float().to(self.device)
+                # masks = torch.tensor(masks).float().to(self.device)  ## (B, 256, 256) binary mask(0 or 1)
                 # print('masks shape: ', masks.shape)
 
                 # inputs : (B, 3, 256, 256)
@@ -192,14 +193,15 @@ class Trainer():
 
             # best 경우 기록
             self.logging_step += 1
-            if (best_mIoU < mIoU):
+            # if (best_mIoU < mIoU):
+            if best_cls_IoU < cls_IoU:
                 if self.one_channel:
                     save_file_name = f"../data/weight/Unet_{self.ails}_label{self.label}_start:{start_time}_{epoch+1}_epoch_IoU_{float(cls_IoU[1]*100):.1}"
                     save_log_name = f"../data/result_log/[{self.ails}_label{self.label}]train_log.json"
                 else:
                     save_file_name = f"../data/weight/Unet_{self.ails}_start:{start_time}_{epoch+1}_epoch_IoU_{float(mIoU):.1}"
                     save_log_name = f"../data/result_log/[{self.ails}]train_log.json"
-                # self.save_model(save_file_name) 
+                self.save_model(save_file_name) 
                 # save model을 안하면 weight에 아무것도 저장이 안되어서 evaluate를 단독으로 돌릴 수가 없어서
                 best_mIoU = mIoU
 
@@ -227,24 +229,9 @@ class Trainer():
             for step, (images, masks, img_ids) in enumerate(data_loader):
                 # 한 번 for문 -- torch.Size([16, 1, 256, 256]) 
 
-                # images = torch.tensor(images).float().to(self.device)
                 images = torch.tensor(np.array(images)).float().to(self.device)
-                
-                # masks = torch.tensor(masks).float().to(self.device)
                 masks = torch.tensor(np.expand_dims(np.array(masks), axis = 1)).float().to(self.device)
-                # masks = masks.int()
-                # print('masks shape--: ', masks.shape) # torch.Size([16, 1, 256, 256])
-                # print(masks[0].shape) # torch.Size([1, 256, 256])
-                # print(masks[0].flatten().shape) # torch.Size([65536])
-                # print(masks[0].flatten())
-
                 outputs = self.model(images)
-                # print('outputs shape--: ', outputs.shape)
-                # print(outputs[0])
-                # print(outputs[0].flatten().shape) # [1, 256, 256]
-                # print(outputs[0].flatten())
-                # # print(np.array(outputs[0].flatten()))
-                # print(np.array(outputs[0].flatten()))
 
                 loss = self.criterion(outputs, masks)
                 total_loss += loss
@@ -266,20 +253,17 @@ class Trainer():
                     h = np.zeros((2,2))
                     
                     h += add_hist(h, masks[i], outputs[i], n_class=n_class)
-                    # acc, acc_cls, mIoU, fwavacc, cls_IoU = label_accuracy_score(h)
                     acc, acc_cls, mIoU, fwavacc, cls_IoU, precision, recall, F1_score, balanced_acc = label_accuracy_score(h)
                     
                     tmp = {"img_id": img_id,
                             "IoU" : list(cls_IoU)}
+                    
                     # sample_logging
                     self.log["train_log"][self.logging_step]['eval']['img'].append(tmp)
                     
 
                 hist += add_hist(hist, masks, outputs, n_class=n_class)
 
-            
-            # acc, acc_cls, mIoU, fwavacc, cls_IoU = label_accuracy_score(hist)
-            # print('THIS IS HIST - th : 0.475 - alpha = 0.25, gamma = 2 #################################################')
             print(hist)
             acc, acc_cls, mIoU, fwavacc, cls_IoU, precision, recall, F1_score, balanced_acc = label_accuracy_score(hist)
             avrg_loss = total_loss / cnt
@@ -299,7 +283,6 @@ class Trainer():
                 self.log["train_log"][self.logging_step]['eval']['summary'] = tmp
                 
                 # print(avrg_loss, mIoU, cls_IoU[0], cls_IoU[1], precision, recall, F1_score, balanced_acc) 
-                # 이렇게 프린트해보면 precision, recall 이런 것들이 element 2개의 list로 나와서 이거 cls_IoU[1]처럼 지정해줘야 0
 
                 message='Validation #{} #{} Average Loss: {:.4f}, mIoU: {:.4f}, background IoU : {:.4f}, target IoU : {:.4f}, precision : {:.4f}, recall : {:.4f}, F1_score : {:.4f}, balanced_accuracy : {:.4f}'.format(epoch, step, avrg_loss, mIoU, cls_IoU[0], cls_IoU[1], precision[1], recall[1], F1_score[1], balanced_acc)
                 # message='Validation #{} #{} Average Loss: {:.4f}, mIoU: {:.4f}, background IoU : {:.4f}, target IoU : {:.4f}'.format(epoch, step, avrg_loss, mIoU, cls_IoU[0], cls_IoU[1] )
@@ -317,7 +300,7 @@ class Trainer():
                 self.log["end_at_kst"] = end_time
                 self.log["train_log"][self.logging_step]['eval']['summary'] = tmp
 
-            print(message)
+            # print(message)
             
             if self.one_channel:
                 save_log_name = f"../data/result_log/[{self.ails}_label{self.label}]train_log.json"
