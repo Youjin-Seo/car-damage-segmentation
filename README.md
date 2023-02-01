@@ -35,7 +35,7 @@
 >
 
 
-|— dataa
+|— data
 
 | &nbsp; &nbsp; &nbsp; |— datainfo : 서로 다른 라벨링에 따라 분류된 json 파일
 > 
