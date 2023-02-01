@@ -30,7 +30,8 @@ class Datasets(Dataset):
             self.img_ids = self.coco.getImgIds()
         else:
             self.img_ids = np.random.choice(self.coco.getImgIds(), 300, replace = False)
-        if label is not None:  # damage: damage 종류 index
+        if label is not None:  
+            # damage: damage 종류 index
             self.label = label
         
         self.size = size
@@ -52,33 +53,6 @@ class Datasets(Dataset):
         if self.mode in ("train","val"):
             ann_ids = self.coco.getAnnIds(imgIds=image_infos['id'])  # [1, 2, 3, 4, 5]
             anns = self.coco.loadAnns(ann_ids)
-            
-            ## anns 구조 (2.라벨렝데이터의 json파일 그대로 가져오는 듯하다)
-            # [
-            #   # anns[0]
-            #   {
-            #   'id': 1,
-            #   'image_id': 1,
-            #   'category_id': 14,
-            #   'segmentation': [[[[ [505, 427], ... , [_, _] ]]]],
-            #   'area': 21885.0,
-            #   'bbox': [154, 190, 375, 244]
-            #   'damage': 'Scratched',
-            #   'part': None
-            #.  'year': 2018
-            #   'color': 'Black'
-            #   'level': None
-            #   'repair': ['Front Wheel(R):exchange', 'Front bumper:coating', ... ]
-            #   },
-            # 
-            #   # anns[1]
-            #   {
-            #   'id': 2, ...
-            #   },
-            #   
-            #   ...
-            # 
-            # ]
 
             masks = np.zeros((image_infos["height"], image_infos["width"]))
             
@@ -94,11 +68,10 @@ class Datasets(Dataset):
             
             ## part
             else: 
-                for ann in anns: ## 내가 말한 단계. 여기서 annotation mask 생성
+                for ann in anns: 
                     pixel_value = ann['category_id'] + 1  ## 14 + 1 = 15 (id=0은 background)
                     masks = np.maximum(self.coco.annToMask(ann) * pixel_value, masks)
                 
-                ## 아래는 원래 있던 주석
                 # masks[0][masks.sum(axis=0) == 0] = 1
                 # masks = masks.astype(np.float32) # n_cls * w * h
 
@@ -131,4 +104,3 @@ class Datasets(Dataset):
 
     def __len__(self) -> int:
         return len(self.img_ids)
-
