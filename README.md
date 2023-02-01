@@ -33,3 +33,6 @@
 
 | &nbsp; &nbsp; &nbsp; |— `damage_labeling.csv` : raw annotation 파일 → 추후 가공을 통해 `data/datainfo`의 json 파일들로 변경
 >
+
+|— data
+| &nbsp; &nbsp; &nbsp; |— datainfo : 
