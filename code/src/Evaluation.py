@@ -105,7 +105,6 @@ class Evaluation():
                 self.log['category'] = eval_datasets.coco.cats
                 eval_data_loader = self.get_dataloader(eval_datasets)
 
-                # 아래에 있는 def validation
                 avrg_loss, mIoU, cls_IoU= self.validation(model, label, 0, eval_data_loader)
 
                 with open( self.ails, "w" ) as f:
@@ -230,8 +229,6 @@ class Evaluation():
 
             
             # acc, acc_cls, mIoU, fwavacc, cls_IoU = label_accuracy_score(hist)
-            # print('THIS IS HIST #################################################')
-            # print(hist)
             acc, acc_cls, mIoU, fwavacc, cls_IoU, precision, recall, F1_score, balanced_acc = label_accuracy_score(hist)
 
             avrg_loss = total_loss / cnt
