@@ -12,6 +12,7 @@ from src.Evaluation import Evaluation
 from src.Utils import FocalLoss
 from torch.optim.lr_scheduler import StepLR
 import albumentations as A
+import segmentation_models_pytorch as smp
 
 
 
@@ -87,17 +88,16 @@ if __name__ == "__main__":
             for i in range(4):
                 print("Training of ", label_schme[i])
 
-                # transform = A.Compose([
-                #             A.RandomRotate90(p=0.3),
-                #             A.Cutout(p=0.3,max_h_size=32,max_w_size=32),
-                #             A.Resize(256,256)])   
-                # print('data augmentation in')
+                transform = A.Compose([
+                            A.RandomRotate90(p=0.3),
+                            A.Cutout(p=0.3,max_h_size=32,max_w_size=32),
+                            A.Resize(256,256)])   
+
                 trainer = Trainer(
                             ails = f"{arg.task}",
                             train_dir = f"../data/datainfo/{arg.task}_{label_schme[i]}_train.json",
                             val_dir = f"../data/datainfo/{arg.task}_val.json",
                             img_base_path = '../data/Dataset/1.원천데이터/damage',
-                            ## img_base_path = '../data/Sample/1.원천데이터/damage',
                             size = 256,
                             model = model,
                             label = i,
@@ -106,9 +106,9 @@ if __name__ == "__main__":
                             # criterion = torch.nn.CrossEntropyLoss(),
                             # criterion = FocalLoss(),
                             # criterion = torch.nn.BCELoss(),
-                            criterion = torch.nn.MSELoss(),
+                            # criterion = torch.nn.MSELoss(),
+                            criterion = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True),
                             # epochs = epochs[i],
-                            # epochs = 2,
                             epochs = 30,
                             batch_size = 16,
                             # batch_size = 64
@@ -125,7 +125,6 @@ if __name__ == "__main__":
                         train_dir = f"../data/datainfo/{arg.task}_trainsample.json",
                         val_dir = f"../data/datainfo/{arg.task}_valsample.json",
                         img_base_path = '../data/Dataset/1.원천데이터/damage_part',
-                        ## img_base_path = '../data/Sample/1.원천데이터/damage_part',
                         size = 256,
                         model = model,
                         label = arg.label,
@@ -198,7 +197,6 @@ if __name__ == "__main__":
                         # criterion = FocalLoss(),
                         criterion = torch.nn.MSELoss(),
                         img_base_path = "../data/Dataset/1.원천데이터/damage"
-                        ## img_base_path = "../data/Sample/1.원천데이터/damage"
             )
             evaluation.evaluation()
         else: ## damage part
@@ -220,7 +218,6 @@ if __name__ == "__main__":
                         # criterion = FocalLoss(),
                         criterion = torch.nn.MSELoss(),
                         img_base_path = "../data/Dataset/1.원천데이터/damage_part"
-                        ## img_base_path = "../data/Sample/1.원천데이터/damage_part"
             )
             evaluation.evaluation()
 
