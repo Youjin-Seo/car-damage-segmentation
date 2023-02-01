@@ -9,6 +9,7 @@ class Unet(nn.Module):
         self.model = smp.Unet( classes = num_classes,
                               encoder_name=encoder,
                               encoder_weights=pre_weight,
+                              decoder_use_batchnorm=True,
                               in_channels=3)
     
     def forward(self, x):
