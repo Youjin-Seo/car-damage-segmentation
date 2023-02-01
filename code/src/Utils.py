@@ -107,8 +107,6 @@ class RemakeCOCOformat():
 
                     a['segmentation'] = [processed_seg_list]
                     d['annotations'].append(a)
-          
-        print(d)
 
         return d
             
@@ -197,40 +195,6 @@ def label_split(data_dir):
     return label_schme
         
 
-
-# def label_accuracy_score(hist):
-#     """
-#     Returns accuracy score evaluation result.
-#       - [acc]: overall accuracy
-#       - [acc_cls]: mean accuracy
-#       - [mean_iu]: mean IU
-#       - [fwavacc]: fwavacc
-#     """
-#     acc = np.diag(hist).sum() / hist.sum() # 정확도
-#     with np.errstate(divide='ignore', invalid='ignore'):
-#         acc_cls = np.diag(hist) / hist.sum(axis=1) # class별 정확도
-#     acc_cls = np.nanmean(acc_cls) # np.nanmean : nan 무시하고 산술평균
-#     # acc_cls : class별 accuracy의 평균
-
-#     with np.errstate(divide='ignore', invalid='ignore'):
-#         iu = np.diag(hist) / (hist.sum(axis=1) + hist.sum(axis=0) - np.diag(hist))
-#         # iu : class별 IoU
-#     if sum(np.isnan(iu)) == len(iu): # IoU값이 전부 nan인 경우 
-#         mean_iu = np.mean([0,0])
-#     else:
-#         mean_iu = np.nanmean(iu) # class별 IoU값의 평균 = mIoU
-    
-#     # add class iu
-#     cls_iu = iu
-#     cls_iu[np.isnan(cls_iu)] = -1 # class별 IoU 중 nan값이 있는 경우 : -1
-#     # IoU가 nan값인 경우 : 분모가 0 
-#     freq = hist.sum(axis=1) / hist.sum() # class별 실측 개수/전체개수
-#     fwavacc = (freq[freq > 0] * iu[freq > 0]).sum()
-
-#     return acc, acc_cls, mean_iu, fwavacc, cls_iu
-
-
-# 수정
 def label_accuracy_score(hist):
     """
     Returns accuracy score evaluation result.
@@ -286,7 +250,8 @@ def label_accuracy_score(hist):
 
 
 
-def customizedAnnToMask(ann, image_info):  # 'segmentation': [[ [x.y], [x.y], ...  , [x.y] ]]
+def customizedAnnToMask(ann, image_info):  
+  # 'segmentation': [[ [x.y], [x.y], ...  , [x.y] ]]
 
   coco_seg = ann['segmentation'][0]
   contours = []
@@ -306,12 +271,6 @@ def customizedAnnToMask(ann, image_info):  # 'segmentation': [[ [x.y], [x.y], ..
 
 # label_true(mask) : 0 or 1
 # label_pred(output) : [0,1]
-
-# def _fast_hist(label_true, label_pred, n_class):
-#     mask = (label_true >= 0) & (label_true < n_class)
-#     hist = np.bincount(n_class * label_true[mask].astype(int) + label_pred[mask],
-#                         minlength=n_class ** 2).reshape(n_class, n_class)
-#     return hist
 
 def _fast_hist(label_true, label_pred, n_class):
 
@@ -338,55 +297,19 @@ def _fast_hist(label_true, label_pred, n_class):
     # hist = torch.Tensor(hist_bin)
     return hist_bin
 
-
-# def add_hist(hist, label_trues, label_preds, n_class):
-#     """
-#         stack hist(confusion matrix)
-#     """
-
-#     for lt, lp in zip(label_trues, label_preds):
-#         hist += _fast_hist(lt.flatten(), lp.flatten(), n_class)
-
-#     return hist
-
-# def add_hist(hist, label_trues, label_preds, n_class):
-#     hist = _fast_hist(label_trues.flatten(), label_preds.flatten(),n_class)
-#     return hist
-
 def add_hist(hist, label_trues, label_preds, n_class):
     # add_hist for original model
     # 원래의 모델에서는 outputs shape이 torch.Size([2, 256, 256]이라서
     # flatten()을 해주면 안된다.
     # print('label_preds',label_preds)
+    
     a = label_preds.cpu().numpy()
     a = np.where(a<0, -1, np.where(a<0.5,0, np.where(a <= 1, 1, 2)))
-    # print(Counter(a[0].flatten().astype(np.int64).tolist()))
-    # print(Counter(a[1].flatten().astype(np.int64).tolist()))
-
-    # print(Counter(label_preds[0].cpu().numpy().flatten().astype(np.int64).tolist()))
-    # print(Counter(label_preds[1].cpu().numpy().flatten().astype(np.int64).tolist()))
-
     hist = _fast_hist(label_trues.flatten(), label_preds.flatten(),n_class)
     return hist
 
-# 기존의 FocaslLoss
-# class FocalLoss(nn.Module):
-#     "Non weighted version of Focal Loss"
-#     def __init__(self, alpha = 0.25, gamma = 2):
-#         super(FocalLoss, self).__init__()
-#         self.alpha = torch.tensor([alpha, 1-alpha]).cuda()
-#         self.gamma = gamma
 
-#     def forward(self, inputs, targets):
-#         BCE_loss = nn.CrossEntropyLoss()(inputs, targets)
-#         targets = targets.type(torch.long)
-#         at = self.alpha.gather(0, targets.data.view(-1))
-#         pt = torch.exp(-BCE_loss)
-#         F_loss = at*(1-pt)**self.gamma * BCE_loss
-#         return F_loss.mean()
-
-
-# 다시 가져온 focal loss + 관련 함수들 ##############################################################
+# focal loss ##############################################################
 
 def label_to_one_hot_label(
     labels: torch.Tensor,
